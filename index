@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日祝福生成器 - 创建个性化生日祝福网页</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        accent: '#FFE66D',
+                        dark: '#1A535C',
+                        light: '#F7FFF7'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                        cursive: ['Dancing Script', 'cursive']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'confetti': 'confetti 3s ease-in-out forwards'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        confetti: {
+                            '0%': { transform: 'translateY(-100vh) rotate(0deg)' },
+                            '100%': { transform: 'translateY(100vh) rotate(360deg)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .text-shadow-lg {
+                text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+            }
+            .bg-blur {
+                backdrop-filter: blur(8px);
+            }
+            .glass {
+                background: rgba(255, 255, 255, 0.25);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+            }
+            .template-card {
+                transition: all 0.3s ease;
+            }
+            .template-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .confetti-piece {
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                opacity: 0;
+                animation: confetti-fall 3s ease-in-out forwards;
+            }
+            @keyframes confetti-fall {
+                0% {
+                    transform: translateY(-100vh) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+            .candle-flame {
+                animation: flicker 1s infinite alternate;
+            }
+            @keyframes flicker {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: scale(1.1);
+                    opacity: 1;
+                }
+            }
+            .balloon {
+                animation: float 3s ease-in-out infinite;
+            }
+            .balloon:nth-child(2) {
+                animation-delay: 0.5s;
+            }
+            .balloon:nth-child(3) {
+                animation-delay: 1s;
+            }
+            .balloon:nth-child(4) {
+                animation-delay: 1.5s;
+            }
+        }
+    </style>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-pink-50 to-blue-50 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-birthday-cake text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-dark">生日祝福生成器</h1>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#templates" class="text-gray-600 hover:text-primary transition-colors">模板</a>
+                <a href="#customize" class="text-gray-600 hover:text-primary transition-colors">定制</a>
+                <a href="#preview" class="text-gray-600 hover:text-primary transition-colors">预览</a>
+                <a href="#share" class="text-gray-600 hover:text-primary transition-colors">分享</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-600 focus:outline-none">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white shadow-lg absolute w-full">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#templates" class="text-gray-600 hover:text-primary transition-colors py-2">模板</a>
+                <a href="#customize" class="text-gray-600 hover:text-primary transition-colors py-2">定制</a>
+                <a href="#preview" class="text-gray-600 hover:text-primary transition-colors py-2">预览</a>
+                <a href="#share" class="text-gray-600 hover:text-primary transition-colors py-2">分享</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <header class="relative overflow-hidden py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-dark leading-tight mb-4">
+                        创建<span class="text-primary">个性化</span>生日祝福
+                    </h1>
+                    <p class="text-gray-600 text-lg mb-8">
+                        选择模板，添加照片和文字，生成独特的生日祝福页面，给寿星一个惊喜！
+                    </p>
+                    <a href="#templates" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 inline-flex items-center">
+                        <i class="fa fa-magic mr-2"></i>
+                        开始创建
+                    </a>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <div class="relative z-10">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/444274270e4e417aa6577d2baeefd2dd~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433943&x-signature=oYLpJANkPcAL%2BswcCUE%2BzETJuJw%3D" 
+                             alt="生日蛋糕" 
+                             class="w-64 md:w-80 mx-auto animate-float">
+                    </div>
+                    <!-- 装饰气球 -->
+                    <div class="absolute -top-10 -left-10 w-20 h-20 rounded-full bg-blue-400 balloon opacity-70"></div>
+                    <div class="absolute top-20 -right-5 w-16 h-16 rounded-full bg-pink-400 balloon opacity-70"></div>
+                    <div class="absolute bottom-10 -left-5 w-18 h-18 rounded-full bg-yellow-400 balloon opacity-70"></div>
+                    <div class="absolute -bottom-5 right-20 w-14 h-14 rounded-full bg-green-400 balloon opacity-70"></div>
+                </div>
+            </div>
+        </div>
+        <!-- 背景装饰 -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+            <div class="absolute top-10 left-10 w-4 h-4 rounded-full bg-pink-300 opacity-50"></div>
+            <div class="absolute top-20 right-20 w-6 h-6 rounded-full bg-blue-300 opacity-50"></div>
+            <div class="absolute bottom-10 left-1/4 w-3 h-3 rounded-full bg-yellow-300 opacity-50"></div>
+            <div class="absolute bottom-20 right-1/3 w-5 h-5 rounded-full bg-green-300 opacity-50"></div>
+        </div>
+    </header>
+
+    <!-- 模板选择区域 -->
+    <section id="templates" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">选择模板</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    我们提供多种风格的生日祝福模板，从温馨浪漫到幽默有趣，总有一款适合你！
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- 模板1：豪华风格 -->
+                <div class="template-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" data-template="luxury">
+                    <div class="relative">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/96cafd26b1f54379b69cf8ba6242dcc8~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433965&x-signature=9iewx3chk1rChyI2U6uqIixbnuk%3D" 
+                             alt="豪华风格模板" 
+                             class="w-full h-48 object-cover">
+                        <div class="absolute top-3 right-3 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">
+                            热门
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">豪华金色</h3>
+                        <p class="text-gray-600 text-sm mb-3">优雅的深蓝色背景搭配金色装饰，彰显高贵气质</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">适合：正式场合</span>
+                            <button class="select-template-btn bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium py-1 px-3 rounded-full transition-colors">
+                                选择
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 模板2：卡通风格 -->
+                <div class="template-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" data-template="cartoon">
+                    <div class="relative">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e510255bbb19406bb677da39af7a3b1d~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433973&x-signature=sPcoV2zdQ7gjBYN04ios0r3jcBs%3D" 
+                             alt="卡通风格模板" 
+                             class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">卡通动物</h3>
+                        <p class="text-gray-600 text-sm mb-3">可爱的卡通动物和彩虹元素，充满童趣和活力</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">适合：儿童、年轻人</span>
+                            <button class="select-template-btn bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium py-1 px-3 rounded-full transition-colors">
+                                选择
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 模板3：浪漫风格 -->
+                <div class="template-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" data-template="romantic">
+                    <div class="relative">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6ef2f2a20904471498b674e3cf87344a~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433966&x-signature=yWgRcUL07DWYUngMJwn%2Fiy0gmYU%3D" 
+                             alt="浪漫风格模板" 
+                             class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">浪漫爱情</h3>
+                        <p class="text-gray-600 text-sm mb-3">粉色心形气球背景，表达浓浓的爱意和温馨祝福</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">适合：爱人、情侣</span>
+                            <button class="select-template-btn bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium py-1 px-3 rounded-full transition-colors">
+                                选择
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 模板4：简约风格 -->
+                <div class="template-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" data-template="minimalist">
+                    <div class="relative">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/bf5ab7457a2048dcadb8231dd58ef33e~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433966&x-signature=MphpMB%2B8Vb58r%2FEVFdrHj75HqME%3D" 
+                             alt="简约风格模板" 
+                             class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">简约现代</h3>
+                        <p class="text-gray-600 text-sm mb-3">简洁的设计和柔和的色彩，展现现代简约美学</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">适合：年轻人、职场人士</span>
+                            <button class="select-template-btn bg-primary/10 hover:bg-primary/20 text-primary text-sm font-medium py-1 px-3 rounded-full transition-colors">
+                                选择
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 个性化定制区域 -->
+    <section id="customize" class="py-16 bg-gradient-to-br from-blue-50 to-purple-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">个性化定制</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    添加照片、编辑文字，让你的生日祝福更加独特和个性化！
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-xl p-6 md:p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 左侧：表单 -->
+                    <div>
+                        <h3 class="text-xl font-bold mb-6 text-dark border-b pb-2">编辑信息</h3>
+                        
+                        <!-- 寿星姓名 -->
+                        <div class="mb-4">
+                            <label for="name" class="block text-gray-700 font-medium mb-2">寿星姓名</label>
+                            <input type="text" id="name" placeholder="请输入寿星姓名" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors">
+                        </div>
+                        
+                        <!-- 祝福语 -->
+                        <div class="mb-4">
+                            <label for="message" class="block text-gray-700 font-medium mb-2">祝福语</label>
+                            <textarea id="message" rows="4" placeholder="请输入你的祝福话语..." 
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"></textarea>
+                            <button id="ai-generate-btn" class="mt-2 bg-secondary hover:bg-secondary/90 text-white text-sm font-medium py-1 px-3 rounded-full transition-colors inline-flex items-center">
+                                <i class="fa fa-magic mr-1"></i>
+                                AI生成祝福语
+                            </button>
+                        </div>
+                        
+                        <!-- AI生成祝福语的选项 -->
+                        <div id="ai-options" class="mb-4 hidden">
+                            <div class="bg-blue-50 p-3 rounded-lg">
+                                <h4 class="font-medium text-dark mb-2">AI生成选项</h4>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">寿星年龄</label>
+                                    <select id="age" class="w-full px-3 py-1 border border-gray-300 rounded-md text-sm">
+                                        <option value="">请选择</option>
+                                        <option value="child">儿童 (0-12岁)</option>
+                                        <option value="teen">青少年 (13-19岁)</option>
+                                        <option value="young">年轻人 (20-35岁)</option>
+                                        <option value="adult">成年人 (36-50岁)</option>
+                                        <option value="senior">长辈 (50岁以上)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">关系</label>
+                                    <select id="relationship" class="w-full px-3 py-1 border border-gray-300 rounded-md text-sm">
+                                        <option value="">请选择</option>
+                                        <option value="family">家人</option>
+                                        <option value="friend">朋友</option>
+                                        <option value="lover">爱人</option>
+                                        <option value="colleague">同事</option>
+                                        <option value="teacher">老师/长辈</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">风格</label>
+                                    <select id="style" class="w-full px-3 py-1 border border-gray-300 rounded-md text-sm">
+                                        <option value="">请选择</option>
+                                        <option value="warm">温馨感人</option>
+                                        <option value="funny">幽默搞笑</option>
+                                        <option value="romantic">浪漫深情</option>
+                                        <option value="inspirational">励志鼓励</option>
+                                        <option value="simple">简单朴实</option>
+                                    </select>
+                                </div>
+                                <button id="generate-message-btn" class="w-full bg-secondary hover:bg-secondary/90 text-white text-sm font-medium py-2 rounded-md transition-colors mt-2">
+                                    生成祝福语
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 上传照片 -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-2">上传照片</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors" id="photo-upload-area">
+                                <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-500 text-sm">点击或拖拽照片到这里上传</p>
+                                <p class="text-gray-400 text-xs mt-1">支持 JPG、PNG 格式，最大 5MB</p>
+                                <input type="file" id="photo-upload" class="hidden" accept="image/*">
+                            </div>
+                        </div>
+                        
+                        <!-- 背景音乐 -->
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-2">背景音乐</label>
+                            <select id="music" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors">
+                                <option value="">请选择音乐</option>
+                                <option value="happy">生日快乐歌 (经典版)</option>
+                                <option value="joyful">欢乐生日歌 (轻快版)</option>
+                                <option value="romantic">浪漫生日歌 (抒情版)</option>
+                                <option value="none">无背景音乐</option>
+                            </select>
+                        </div>
+                        
+                        <button id="preview-btn" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 mt-4">
+                            预览效果
+                        </button>
+                    </div>
+                    
+                    <!-- 右侧：预览 -->
+                    <div>
+                        <h3 class="text-xl font-bold mb-6 text-dark border-b pb-2">实时预览</h3>
+                        <div class="relative">
+                            <!-- 模板预览区域 -->
+                            <div id="template-preview" class="w-full h-96 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+                                <div class="text-center">
+                                    <i class="fa fa-image text-4xl text-gray-400 mb-2"></i>
+                                    <p class="text-gray-500">请先选择一个模板</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 预览中的元素 -->
+                            <div id="preview-name" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-full px-4">
+                                <h2 class="text-4xl font-bold text-white text-shadow-lg">亲爱的 [姓名]</h2>
+                                <p class="text-xl text-white text-shadow mt-4">生日快乐！</p>
+                            </div>
+                            
+                            <div id="preview-message" class="hidden absolute bottom-8 left-1/2 transform -translate-x-1/2 text-center w-full px-4">
+                                <p class="text-white text-shadow-lg max-w-xs mx-auto"></p>
+                            </div>
+                            
+                            <div id="preview-photo" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                                <!-- 照片将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 分享区域 -->
+    <section id="share" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">分享祝福</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    生成你的生日祝福页面，分享给寿星，给他/她一个惊喜！
+                </p>
+            </div>
+            
+            <div class="max-w-3xl mx-auto bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl shadow-lg p-8">
+                <div class="text-center mb-8">
+                    <div class="inline-block p-3 bg-primary/10 rounded-full mb-4">
+                        <i class="fa fa-share-alt text-3xl text-primary"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-dark mb-2">准备好分享你的祝福了吗？</h3>
+                    <p class="text-gray-600">
+                        点击下方按钮，生成专属的生日祝福页面链接，分享给寿星吧！
+                    </p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-4 justify-center mb-8">
+                    <button id="generate-link-btn" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center">
+                        <i class="fa fa-link mr-2"></i>
+                        生成分享链接
+                    </button>
+                    <button id="download-btn" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center">
+                        <i class="fa fa-download mr-2"></i>
+                        下载为图片
+                    </button>
+                </div>
+                
+                <!-- 分享链接结果 -->
+                <div id="share-result" class="hidden bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div class="flex flex-col md:flex-row items-center gap-3">
+                        <input type="text" id="share-link" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors" readonly>
+                        <button id="copy-link-btn" class="bg-primary/10 hover:bg-primary/20 text-primary font-medium py-2 px-4 rounded-lg transition-colors">
+                            <i class="fa fa-copy mr-1"></i>
+                            复制
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 mb-2">或者通过以下方式分享：</p>
+                        <div class="flex gap-3">
+                            <button class="share-social-btn bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] p-2 rounded-full transition-colors">
+                                <i class="fa fa-facebook"></i>
+                            </button>
+                            <button class="share-social-btn bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 text-[#1DA1F2] p-2 rounded-full transition-colors">
+                                <i class="fa fa-twitter"></i>
+                            </button>
+                            <button class="share-social-btn bg-[#E4405F]/10 hover:bg-[#E4405F]/20 text-[#E4405F] p-2 rounded-full transition-colors">
+                                <i class="fa fa-instagram"></i>
+                            </button>
+                            <button class="share-social-btn bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] p-2 rounded-full transition-colors">
+                                <i class="fa fa-whatsapp"></i>
+                            </button>
+                            <button class="share-social-btn bg-[#FF0000]/10 hover:bg-[#FF0000]/20 text-[#FF0000] p-2 rounded-full transition-colors">
+                                <i class="fa fa-envelope"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 二维码 -->
+                <div id="qrcode-container" class="hidden flex flex-col items-center">
+                    <p class="text-gray-600 mb-3">扫描二维码查看祝福</p>
+                    <div id="qrcode" class="bg-white p-2 rounded-lg shadow-md mb-3"></div>
+                    <button id="download-qr-btn" class="bg-secondary/10 hover:bg-secondary/20 text-secondary text-sm font-medium py-1 px-3 rounded-full transition-colors">
+                        <i class="fa fa-download mr-1"></i>
+                        下载二维码
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-birthday-cake text-primary text-2xl"></i>
+                        <h2 class="text-xl font-bold">生日祝福生成器</h2>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        创建个性化的生日祝福页面，给你的亲友一个难忘的生日惊喜！
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-pinterest"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#templates" class="text-gray-400 hover:text-primary transition-colors">选择模板</a></li>
+                        <li><a href="#customize" class="text-gray-400 hover:text-primary transition-colors">个性化定制</a></li>
+                        <li><a href="#share" class="text-gray-400 hover:text-primary transition-colors">分享祝福</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">常见问题</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">订阅更新</h3>
+                    <p class="text-gray-400 mb-4">
+                        订阅我们的邮件，获取最新的模板和功能更新！
+                    </p>
+                    <form class="flex">
+                        <input type="email" placeholder="你的邮箱地址" class="px-4 py-2 rounded-l-lg focus:outline-none flex-1">
+                        <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
+                            订阅
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+                <p>&copy; 2025 生日祝福生成器. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 蜡烛点燃动画模态框 -->
+    <div id="cake-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full text-center">
+            <div class="mb-6">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/444274270e4e417aa6577d2baeefd2dd~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433943&x-signature=oYLpJANkPcAL%2BswcCUE%2BzETJuJw%3D" 
+                     alt="生日蛋糕" 
+                     class="w-48 mx-auto">
+            </div>
+            <h3 class="text-2xl font-bold text-dark mb-2">准备好点燃蜡烛了吗？</h3>
+            <p class="text-gray-600 mb-6">点击下方按钮，为寿星点燃生日蜡烛！</p>
+            <div class="flex justify-center gap-4">
+                <button id="light-candle-btn" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all">
+                    点燃蜡烛
+                </button>
+                <button id="close-modal-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-lg transition-colors">
+                    稍后
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量
+        let selectedTemplate = null;
+        let uploadedPhoto = null;
+        let audio = null;
+        
+        // DOM 加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 移动端菜单切换
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                        
+                        // 如果是移动端，点击后关闭菜单
+                        if (!mobileMenu.classList.contains('hidden')) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+            
+            // 模板选择
+            const templateCards = document.querySelectorAll('.template-card');
+            const templatePreview = document.getElementById('template-preview');
+            const previewName = document.getElementById('preview-name');
+            const previewMessage = document.getElementById('preview-message');
+            
+            templateCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // 移除其他卡片的选中状态
+                    templateCards.forEach(c => c.classList.remove('ring-2', 'ring-primary'));
+                    
+                    // 添加当前卡片的选中状态
+                    this.classList.add('ring-2', 'ring-primary');
+                    
+                    // 获取模板类型
+                    selectedTemplate = this.dataset.template;
+                    
+                    // 更新预览
+                    updateTemplatePreview(selectedTemplate);
+                    
+                    // 显示预览中的姓名和消息区域
+                    previewName.classList.remove('hidden');
+                    previewMessage.classList.remove('hidden');
+                    
+                    // 更新姓名预览
+                    updateNamePreview();
+                    
+                    // 更新消息预览
+                    updateMessagePreview();
+                });
+            });
+            
+            // 姓名输入更新
+            const nameInput = document.getElementById('name');
+            nameInput.addEventListener('input', updateNamePreview);
+            
+            // 消息输入更新
+            const messageInput = document.getElementById('message');
+            messageInput.addEventListener('input', updateMessagePreview);
+            
+            // 照片上传
+            const photoUploadArea = document.getElementById('photo-upload-area');
+            const photoUpload = document.getElementById('photo-upload');
+            const previewPhoto = document.getElementById('preview-photo');
+            
+            photoUploadArea.addEventListener('click', function() {
+                photoUpload.click();
+            });
+            
+            photoUploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('border-primary', 'bg-primary/5');
+            });
+            
+            photoUploadArea.addEventListener('dragleave', function() {
+                this.classList.remove('border-primary', 'bg-primary/5');
+            });
+            
+            photoUploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('border-primary', 'bg-primary/5');
+                
+                if (e.dataTransfer.files.length) {
+                    handlePhotoUpload(e.dataTransfer.files[0]);
+                }
+            });
+            
+            photoUpload.addEventListener('change', function() {
+                if (this.files.length) {
+                    handlePhotoUpload(this.files[0]);
+                }
+            });
+            
+            // AI生成祝福语按钮
+            const aiGenerateBtn = document.getElementById('ai-generate-btn');
+            const aiOptions = document.getElementById('ai-options');
+            
+            aiGenerateBtn.addEventListener('click', function() {
+                aiOptions.classList.toggle('hidden');
+            });
+            
+            // 生成祝福语按钮
+            const generateMessageBtn = document.getElementById('generate-message-btn');
+            
+            generateMessageBtn.addEventListener('click', function() {
+                const age = document.getElementById('age').value;
+                const relationship = document.getElementById('relationship').value;
+                const style = document.getElementById('style').value;
+                
+                if (!age || !relationship || !style) {
+                    alert('请填写完整的信息');
+                    return;
+                }
+                
+                // 生成祝福语
+                const generatedMessage = generateBirthdayMessage(age, relationship, style);
+                
+                // 填充到消息输入框
+                messageInput.value = generatedMessage;
+                
+                // 更新预览
+                updateMessagePreview();
+                
+                // 隐藏AI选项
+                aiOptions.classList.add('hidden');
+            });
+            
+            // 预览按钮
+            const previewBtn = document.getElementById('preview-btn');
+            const cakeModal = document.getElementById('cake-modal');
+            
+            previewBtn.addEventListener('click', function() {
+                if (!selectedTemplate) {
+                    alert('请先选择一个模板');
+                    return;
+                }
+                
+                if (!nameInput.value.trim()) {
+                    alert('请输入寿星姓名');
+                    return;
+                }
+                
+                // 显示蜡烛点燃模态框
+                cakeModal.classList.remove('hidden');
+            });
+            
+            // 关闭模态框按钮
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            
+            closeModalBtn.addEventListener('click', function() {
+                cakeModal.classList.add('hidden');
+            });
+            
+            // 点燃蜡烛按钮
+            const lightCandleBtn = document.getElementById('light-candle-btn');
+            
+            lightCandleBtn.addEventListener('click', function() {
+                // 关闭模态框
+                cakeModal.classList.add('hidden');
+                
+                // 播放生日歌
+                playBirthdaySong();
+                
+                // 显示彩带效果
+                createConfetti();
+                
+                // 滚动到分享区域
+                document.querySelector('#share').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+            
+            // 生成分享链接按钮
+            const generateLinkBtn = document.getElementById('generate-link-btn');
+            const shareResult = document.getElementById('share-result');
+            const shareLink = document.getElementById('share-link');
+            const qrcodeContainer = document.getElementById('qrcode-container');
+            
+            generateLinkBtn.addEventListener('click', function() {
+                if (!selectedTemplate || !nameInput.value.trim()) {
+                    alert('请先选择模板并填写寿星姓名');
+                    return;
+                }
+                
+                // 生成随机链接
+                const randomString = Math.random().toString(36).substring(2, 10);
+                const generatedLink = `https://birthday-wishes.example.com/${randomString}`;
+                
+                // 显示分享结果
+                shareLink.value = generatedLink;
+                shareResult.classList.remove('hidden');
+                
+                // 生成二维码
+                generateQRCode(generatedLink);
+                qrcodeContainer.classList.remove('hidden');
+                
+                // 滚动到分享结果
+                shareResult.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+            
+            // 复制链接按钮
+            const copyLinkBtn = document.getElementById('copy-link-btn');
+            
+            copyLinkBtn.addEventListener('click', function() {
+                shareLink.select();
+                document.execCommand('copy');
+                
+                // 更改按钮文本
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fa fa-check mr-1"></i>已复制';
+                
+                // 2秒后恢复
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 2000);
+            });
+            
+            // 社交媒体分享按钮
+            const shareSocialBtns = document.querySelectorAll('.share-social-btn');
+            
+            shareSocialBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const platform = this.querySelector('i').className.split('-')[1];
+                    shareToSocialMedia(platform, shareLink.value);
+                });
+            });
+            
+            // 下载为图片按钮
+            const downloadBtn = document.getElementById('download-btn');
+            
+            downloadBtn.addEventListener('click', function() {
+                if (!selectedTemplate) {
+                    alert('请先选择模板');
+                    return;
+                }
+                
+                // 这里简化处理，实际项目中可以使用html2canvas等库将预览区域转换为图片
+                alert('图片下载功能正在开发中，敬请期待！');
+            });
+            
+            // 下载二维码按钮
+            const downloadQrBtn = document.getElementById('download-qr-btn');
+            
+            downloadQrBtn.addEventListener('click', function() {
+                const qrcode = document.getElementById('qrcode');
+                const canvas = qrcode.querySelector('canvas');
+                
+                if (canvas) {
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.download = `birthday-wish-${nameInput.value.trim()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }
+            });
+            
+            // 背景音乐选择
+            const musicSelect = document.getElementById('music');
+            
+            musicSelect.addEventListener('change', function() {
+                // 停止当前播放的音乐
+                if (audio) {
+                    audio.pause();
+                    audio = null;
+                }
+                
+                // 如果选择了音乐，播放
+                if (this.value && this.value !== 'none') {
+                    playBackgroundMusic(this.value);
+                }
+            });
+        });
+        
+        // 更新模板预览
+        function updateTemplatePreview(templateType) {
+            const templatePreview = document.getElementById('template-preview');
+            let templateImage = '';
+            
+            switch(templateType) {
+                case 'luxury':
+                    templateImage = 'https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/96cafd26b1f54379b69cf8ba6242dcc8~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433965&x-signature=9iewx3chk1rChyI2U6uqIixbnuk%3D';
+                    break;
+                case 'cartoon':
+                    templateImage = 'https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e510255bbb19406bb677da39af7a3b1d~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433973&x-signature=sPcoV2zdQ7gjBYN04ios0r3jcBs%3D';
+                    break;
+                case 'romantic':
+                    templateImage = 'https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6ef2f2a20904471498b674e3cf87344a~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433966&x-signature=yWgRcUL07DWYUngMJwn%2Fiy0gmYU%3D';
+                    break;
+                case 'minimalist':
+                    templateImage = 'https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/bf5ab7457a2048dcadb8231dd58ef33e~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202603182152091F69194F6EE27C8D2F2D&rrcfp=f06b921b&x-expires=1776433966&x-signature=MphpMB%2B8Vb58r%2FEVFdrHj75HqME%3D';
+                    break;
+                default:
+                    templateImage = '';
+            }
+            
+            templatePreview.style.backgroundImage = `url(${templateImage})`;
+            templatePreview.style.backgroundSize = 'cover';
+            templatePreview.style.backgroundPosition = 'center';
+            
+            // 清空之前的内容
+            while (templatePreview.firstChild) {
+                templatePreview.removeChild(templatePreview.firstChild);
+            }
+        }
+        
+        // 更新姓名预览
+        function updateNamePreview() {
+            const nameInput = document.getElementById('name');
+            const previewName = document.getElementById('preview-name');
+            const nameElement = previewName.querySelector('h2');
+            
+            if (nameInput.value.trim()) {
+                nameElement.textContent = `亲爱的 ${nameInput.value.trim()}`;
+            } else {
+                nameElement.textContent = '亲爱的 [姓名]';
+            }
+        }
+        
+        // 更新消息预览
+        function updateMessagePreview() {
+            const messageInput = document.getElementById('message');
+            const previewMessage = document.getElementById('preview-message');
+            const messageElement = previewMessage.querySelector('p');
+            
+            if (messageInput.value.trim()) {
+                messageElement.textContent = messageInput.value.trim();
+            } else {
+                messageElement.textContent = '愿你的生日充满欢乐和惊喜，祝你生日快乐！';
+            }
+        }
+        
+        // 处理照片上传
+        function handlePhotoUpload(file) {
+            // 检查文件类型
+            if (!file.type.match('image.*')) {
+                alert('请上传图片文件');
+                return;
+            }
+            
+            // 检查文件大小
+            if (file.size > 5 * 1024 * 1024) {
+                alert('图片大小不能超过5MB');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                uploadedPhoto = e.target.result;
+                
+                // 更新预览
+                const previewPhoto = document.getElementById('preview-photo');
+                previewPhoto.style.backgroundImage = `url(${uploadedPhoto})`;
+                previewPhoto.style.backgroundSize = 'cover';
+                previewPhoto.style.backgroundPosition = 'center';
+                previewPhoto.classList.remove('hidden');
+                
+                // 隐藏姓名预览
+                document.getElementById('preview-name').classList.add('hidden');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        // 生成生日祝福语
+        function generateBirthdayMessage(age, relationship, style) {
+            // 基于年龄、关系和风格生成祝福语
+            const messages = {
+                child: {
+                    family: {
+                        warm: "亲爱的小宝贝，今天是你的生日，愿你的每一天都像彩虹一样绚丽多彩，充满欢笑和惊喜！我们爱你！",
+                        funny: "小寿星，生日快乐！今天你又长大一岁啦！记得要多吃蛋糕，少调皮哦！哈哈！",
+                        romantic: "我亲爱的小天使，今天是你来到这个世界的日子，感谢你带给我们无尽的欢乐和爱。生日快乐！",
+                        inspirational: "小勇士，生日快乐！新的一岁，愿你勇敢探索世界，学习新知识，成为更好的自己！",
+                        simple: "宝贝，生日快乐！愿你的生日充满欢乐，健康成长！"
+                    },
+                    friend: {
+                        warm: "亲爱的小伙伴，生日快乐！愿你的生日充满欢声笑语，收到很多很多礼物！",
+                        funny: "嘿，小寿星！今天你最大，想吃多少蛋糕就吃多少，想怎么玩就怎么玩！生日快乐！",
+                        romantic: "我亲爱的小朋友，今天是你的生日，愿你的生活像童话故事一样美好，充满奇迹和惊喜！",
+                        inspirational: "小探险家，生日快乐！新的一岁，愿你勇敢面对一切挑战，成为一个坚强的小英雄！",
+                        simple: "生日快乐！愿你健康快乐地成长！"
+                    }
+                },
+                teen: {
+                    family: {
+                        warm: "亲爱的孩子，今天是你的生日，看着你一天天长大，我们的心中充满了自豪和感动。愿你的未来充满无限可能！",
+                        funny: "嘿，小伙子/小姑娘，生日快乐！恭喜你又老了一岁！不过别担心，你在我们心中永远是那个可爱的孩子！",
+                        romantic: "我亲爱的孩子，今天是你人生中的又一个里程碑，感谢你带给我们的欢乐和骄傲。生日快乐，我们永远爱你！",
+                        inspirational: "年轻人，生日快乐！新的一岁，愿你勇敢追求梦想，不断突破自我，成为最好的自己！",
+                        simple: "生日快乐！愿你的未来充满阳光和希望！"
+                    },
+                    friend: {
+                        warm: "亲爱的朋友，生日快乐！感谢你一直以来的陪伴和支持，愿我们的友谊长存！",
+                        funny: "嘿，寿星！今天不醉不归！开个玩笑，记得要适量哦！哈哈，生日快乐！",
+                        romantic: "我亲爱的朋友，今天是你的生日，愿你的生活充满爱和幸福，每一天都如诗如画！",
+                        inspirational: "兄弟/姐妹，生日快乐！新的一岁，愿你勇敢追逐梦想，实现自己的人生价值！",
+                        simple: "生日快乐！愿你天天开心，一切顺利！"
+                    },
+                    lover: {
+                        warm: "亲爱的，生日快乐！感谢你出现在我的生命中，让我的生活变得如此美好。我爱你！",
+                        funny: "嘿，宝贝！今天是你的生日，我允许你在今天对我发号施令！不过仅限今天哦！哈哈，生日快乐！",
+                        romantic: "我亲爱的爱人，今天是你的生日，也是我最幸福的日子，因为这一天，你来到了这个世界。我爱你，永远！",
+                        inspirational: "亲爱的，生日快乐！新的一岁，愿我们一起成长，一起面对生活中的挑战，一起创造美好的未来！",
+                        simple: "生日快乐，我爱你！"
+                    }
+                },
+                young: {
+                    family: {
+                        warm: "亲爱的，生日快乐！看着你从一个孩子成长为现在的样子，我们感到无比自豪。愿你的未来更加辉煌！",
+                        funny: "嘿，生日快乐！虽然你已经长大了，但在我们心中，你永远是那个需要我们疼爱的孩子！",
+                        romantic: "我亲爱的，今天是你的生日，感谢你带给我们的欢乐和骄傲。愿你的生活充满爱和幸福！",
+                        inspirational: "年轻人，生日快乐！愿你在新的一岁里，勇敢追求自己的梦想，创造属于自己的精彩人生！",
+                        simple: "生日快乐！愿你健康快乐，一切顺利！"
+                    },
+                    friend: {
+                        warm: "亲爱的朋友，生日快乐！感谢你一直以来的陪伴和支持，愿我们的友谊长存！",
+                        funny: "嘿，寿星！今天是你的生日，记得要多吃蛋糕，少操心！哈哈，生日快乐！",
+                        romantic: "我亲爱的朋友，今天是你的生日，愿你的生活充满爱和幸福，每一天都如诗如画！",
+                        inspirational: "兄弟/姐妹，生日快乐！新的一岁，愿你勇敢追逐梦想，实现自己的人生价值！",
+                        simple: "生日快乐！愿你天天开心，一切顺利！"
+                    },
+                    lover: {
+                        warm: "亲爱的，生日快乐！感谢你出现在我的生命中，让我的生活变得如此美好。我爱你！",
+                        funny: "嘿，宝贝！今天是你的生日，我允许你在今天对我发号施令！不过仅限今天哦！哈哈，生日快乐！",
+                        romantic: "我亲爱的爱人，今天是你的生日，也是我最幸福的日子，因为这一天，你来到了这个世界。我爱你，永远！",
+                        inspirational: "亲爱的，生日快乐！新的一岁，愿我们一起成长，一起面对生活中的挑战，一起创造美好的未来！",
+                        simple: "生日快乐，我爱你！"
+                    },
+                    colleague: {
+                        warm: "亲爱的同事，生日快乐！感谢你一直以来的辛勤工作和团队合作，愿你的生日充满欢乐！",
+                        funny: "嘿，寿星！今天是你的生日，记得要请客哦！哈哈，开个玩笑，生日快乐！",
+                        romantic: "我亲爱的同事，今天是你的生日，愿你的生活充满爱和幸福，事业蒸蒸日上！",
+                        inspirational: "亲爱的同事，生日快乐！愿你在新的一岁里，事业有成，实现自己的人生目标！",
+                        simple: "生日快乐！愿你工作顺利，生活愉快！"
+                    }
+                },
+                adult: {
+                    family: {
+                        warm: "亲爱的，生日快乐！感谢你为家庭所做的一切，你是我们的支柱和骄傲。愿你的生日充满爱和欢乐！",
+                        funny: "嘿，生日快乐！虽然你已经不再年轻，但在我们心中，你永远是那个充满活力的人！",
+                        romantic: "我亲爱的，今天是你的生日，感谢你一直以来的陪伴和支持，你是我生命中最重要的人。我爱你！",
+                        inspirational: "亲爱的，生日快乐！愿你在新的一岁里，继续追求自己的梦想，创造更加美好的生活！",
+                        simple: "生日快乐！愿你健康快乐，家庭幸福！"
+                    },
+                    friend: {
+                        warm: "亲爱的朋友，生日快乐！感谢你一直以来的陪伴和支持，愿我们的友谊长存！",
+                        funny: "嘿，寿星！今天是你的生日，记得要多吃蛋糕，少操心！哈哈，生日快乐！",
+                        romantic: "我亲爱的朋友，今天是你的生日，愿你的生活充满爱和幸福，每一天都如诗如画！",
+                        inspirational: "兄弟/姐妹，生日快乐！新的一岁，愿你勇敢追逐梦想，实现自己的人生价值！",
+                        simple: "生日快乐！愿你天天开心，一切顺利！"
+                    },
+                    lover: {
+                        warm: "亲爱的，生日快乐！感谢你出现在我的生命中，让我的生活变得如此美好。我爱你！",
+                        funny: "嘿，宝贝！今天是你的生日，我允许你在今天对我发号施令！不过仅限今天哦！哈哈，生日快乐！",
+                        romantic: "我亲爱的爱人，今天是你的生日，也是我最幸福的日子，因为这一天，你来到了这个世界。我爱你，永远！",
+                        inspirational: "亲爱的，生日快乐！新的一岁，愿我们一起成长，一起面对生活中的挑战，一起创造美好的未来！",
+                        simple: "生日快乐，我爱你！"
+                    },
+                    colleague: {
+                        warm: "亲爱的同事，生日快乐！感谢你一直以来的辛勤工作和团队合作，愿你的生日充满欢乐！",
+                        funny: "嘿，寿星！今天是你的生日，记得要请客哦！哈哈，开个玩笑，生日快乐！",
+                        romantic: "我亲爱的同事，今天是你的生日，愿你的生活充满爱和幸福，事业蒸蒸日上！",
+                        inspirational: "亲爱的同事，生日快乐！愿你在新的一岁里，事业有成，实现自己的人生目标！",
+                        simple: "生日快乐！愿你工作顺利，生活愉快！"
+                    },
+                    teacher: {
+                        warm: "尊敬的老师，生日快乐！感谢您一直以来的教导和关怀，您是我人生中的引路人。",
+                        funny: "老师，生日快乐！虽然您总是说我们是您带过的最差的一届，但我们知道您其实很爱我们！",
+                        romantic: "尊敬的老师，今天是您的生日，愿您的生活充满爱和幸福，桃李满天下！",
+                        inspirational: "老师，生日快乐！愿您在新的一年里，继续培育更多的人才，为教育事业做出更大的贡献！",
+                        simple: "老师，生日快乐！祝您健康长寿！"
+                    }
+                },
+                senior: {
+                    family: {
+                        warm: "亲爱的爸爸/妈妈，生日快乐！感谢您一直以来的养育之恩，您是我们生命中最重要的人。愿您健康长寿！",
+                        funny: "嘿，老爸/老妈！今天是您的生日，虽然您年纪大了，但心态要永远年轻哦！哈哈，生日快乐！",
+                        romantic: "我亲爱的爸爸/妈妈，今天是您的生日，感谢您给了我生命，教我做人的道理。我爱您！",
+                        inspirational: "亲爱的爸爸/妈妈，生日快乐！愿您在新的一年里，身体健康，心情愉快，享受美好的晚年生活！",
+                        simple: "爸爸/妈妈，生日快乐！祝您健康长寿！"
+                    },
+                    friend: {
+                        warm: "亲爱的老朋友，生日快乐！感谢你一直以来的陪伴和支持，愿我们的友谊长存！",
+                        funny: "嘿，老伙计！今天是你的生日，记得要多吃蛋糕，少操心！哈哈，生日快乐！",
+                        romantic: "我亲爱的朋友，今天是你的生日，愿你的晚年生活充满爱和幸福，每一天都如诗如画！",
+                        inspirational: "老朋友，生日快乐！愿你在新的一年里，身体健康，心情愉快，享受美好的生活！",
+                        simple: "生日快乐！愿你健康长寿！"
+                    },
+                    teacher: {
+                        warm: "尊敬的老师，生日快乐！感谢您一直以来的教导和关怀，您是我人生中的引路人。",
+                        funny: "老师，生日快乐！虽然您已经退休了，但您的教诲我们永远不会忘记！",
+                        romantic: "尊敬的老师，今天是您的生日，愿您的晚年生活充满爱和幸福，桃李满天下！",
+                        inspirational: "老师，生日快乐！愿您在新的一年里，身体健康，心情愉快，享受美好的晚年生活！",
+                        simple: "老师，生日快乐！祝您健康长寿！"
+                    }
+                }
+            };
+            
+            // 如果没有找到匹配的祝福语，返回默认祝福语
+            return messages[age] && messages[age][relationship] && messages[age][relationship][style] 
+                ? messages[age][relationship][style] 
+                : "愿你的生日充满欢乐和惊喜，祝你生日快乐！";
+        }
+        
+        // 播放生日歌
+        function playBirthdaySong() {
+            // 停止当前播放的音乐
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
+            
+            // 创建新的音频对象
+            audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+            audio.loop = false;
+            audio.play();
+        }
+        
+        // 播放背景音乐
+        function playBackgroundMusic(type) {
+            // 停止当前播放的音乐
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
+            
+            // 根据类型选择音乐
+            let musicUrl = '';
+            
+            switch(type) {
+                case 'happy':
+                    musicUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+                    break;
+                case 'joyful':
+                    musicUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3';
+                    break;
+                case 'romantic':
+                    musicUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3';
+                    break;
+                default:
+                    return;
+            }
+            
+            // 创建新的音频对象
+            audio = new Audio(musicUrl);
+            audio.loop = true;
+            audio.volume = 0.5;
+            audio.play();
+        }
+        
+        // 创建彩带效果
+        function createConfetti() {
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.pointerEvents = 'none';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+            
+            // 创建100个彩带
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                
+                // 随机颜色
+                const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#1A535C', '#F7FFF7', '#FF9F1C', '#E71D36', '#011627'];
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // 随机大小
+                const size = Math.random() * 10 + 5;
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                
+                // 随机位置
+                confetti.style.left = `${Math.random() * 100}%`;
+                
+                // 随机旋转
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                // 随机动画延迟
+                confetti.style.animationDelay = `${Math.random() * 3}s`;
+                
+                // 随机动画持续时间
+                confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                
+                container.appendChild(confetti);
+            }
+            
+            // 3秒后移除容器
+            setTimeout(() => {
+                document.body.removeChild(container);
+            }, 5000);
+        }
+        
+        // 生成二维码
+        function generateQRCode(url) {
+            const qrcode = document.getElementById('qrcode');
+            
+            // 清空之前的内容
+            while (qrcode.firstChild) {
+                qrcode.removeChild(qrcode.firstChild);
+            }
+            
+            // 创建二维码图片
+            const img = document.createElement('img');
+            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+            img.alt = '生日祝福二维码';
+            img.className = 'w-32 h-32';
+            
+            qrcode.appendChild(img);
+        }
+        
+        // 分享到社交媒体
+        function shareToSocialMedia(platform, url) {
+            let shareUrl = '';
+            const text = `快来查看我为你准备的生日祝福！`;
+            
+            switch(platform) {
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+                    break;
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+                    break;
+                case 'instagram':
+                    // Instagram不支持直接分享链接，需要提示用户
+                    alert('请下载二维码，然后在Instagram上分享！');
+                    return;
+                case 'whatsapp':
+                    shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+                    break;
+                case 'envelope':
+                    shareUrl = `mailto:?subject=${encodeURIComponent('生日祝福')}&body=${encodeURIComponent(text + ' ' + url)}`;
+                    break;
+                default:
+                    return;
+            }
+            
+            // 打开分享链接
+            window.open(shareUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
